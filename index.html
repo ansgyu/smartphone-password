@@ -3,13 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>다크 모드 퀴즈 & 잭팟</title>
+  <title>PASSWORD</title>
 
-  <!-- LaTeX (MathJax) 라이브러리 -->
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-  <!-- Supabase Client 라이브러리 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -127,8 +125,7 @@
       background-color: #444;
       color: #fff;
     }
-
-    /* 잭팟 애니메이션 영역 */
+    
     .jackpot-container {
       display: flex;
       justify-content: center;
@@ -152,7 +149,6 @@
       overflow: hidden;
     }
 
-    /* 긴 인증번호 출력 박스 */
     .code-box {
       display: none;
       background-color: #000;
@@ -165,7 +161,7 @@
       color: #00ffcc;
       margin: 20px 0;
       word-break: break-all;
-      user-select: all; /* 클릭 시 쉽게 복사 가능 */
+      user-select: all;
     }
 
     .result-msg {
@@ -180,58 +176,52 @@
 
   <div class="container">
 
-    <!-- 1페이지: 설명창 -->
     <div id="page1" class="page active">
-      <h1>퀴즈 챌린지</h1>
-      <p>총 3개의 문항이 준비되어 있습니다.<br>모든 문제를 맞히고 보안 인증번호를 획득하세요!</p>
+      <h1>SMARTPHONE PASSWORD</h1>
+      <p>3문항을 모두 맞혀야 암호를 획득할 수 있습니다!<br>문항별 정오는 모든 문항을 푼 후, 확인할 수 있습니다.</p>
       <button onclick="nextPage(2)">다음</button>
     </div>
 
-    <!-- 2페이지: 문제 1 -->
     <div id="page2" class="page">
-      <h2>문제 1</h2>
+      <h2>1번.</h2>
       <div class="question-box">
         아래 이차방정식의 해 \( x \)는 얼마일까요?<br>
         \( x^2 - 4 = 0 \) (양수만 입력)
       </div>
-      <input type="text" id="ans1" placeholder="답을 입력하세요">
+      <input type="text" id="ans1" placeholder="답안 입력">
       <div class="btn-group">
         <button class="secondary" onclick="nextPage(1)">뒤로가기</button>
         <button onclick="nextPage(3)">다음</button>
       </div>
     </div>
 
-    <!-- 3페이지: 문제 2 -->
     <div id="page3" class="page">
-      <h2>문제 2</h2>
+      <h2>2번.</h2>
       <div class="question-box">
         대한민국의 수도는 어디일까요?
       </div>
-      <input type="text" id="ans2" placeholder="답을 입력하세요">
+      <input type="text" id="ans2" placeholder="답안 입력">
       <div class="btn-group">
         <button class="secondary" onclick="nextPage(2)">뒤로가기</button>
         <button onclick="nextPage(4)">다음</button>
       </div>
     </div>
 
-    <!-- 4페이지: 문제 3 -->
     <div id="page4" class="page">
-      <h2>문제 3</h2>
+      <h2>3번.</h2>
       <div class="question-box">
         1년은 몇 달일까요? (숫자만 입력)
       </div>
-      <input type="text" id="ans3" placeholder="답을 입력하세요">
+      <input type="text" id="ans3" placeholder="답안 입력">
       <div class="btn-group">
         <button class="secondary" onclick="nextPage(3)">뒤로가기</button>
         <button onclick="processAndGoToPage5()">확인</button>
       </div>
     </div>
 
-    <!-- 5페이지: 결과 & 슬롯머신 -->
     <div id="page5" class="page">
       <h2>결과 확인</h2>
 
-      <!-- 잭팟 슬롯 연출 -->
       <div class="jackpot-container">
         <div class="slot" id="slot1">?</div>
         <div class="slot" id="slot2">?</div>
@@ -240,27 +230,17 @@
 
       <div id="resultMsg" class="result-msg"></div>
 
-      <!-- 정답 시 긴 인증번호가 나타나는 영역 -->
       <div id="codeBox" class="code-box"></div>
-
-      <div class="btn-group" style="margin-top: 20px;">
-        <button class="secondary" onclick="nextPage(4)">다시 풀기</button>
-      </div>
     </div>
 
   </div>
 
   <script>
-    // ------------------------------------------------------------------
-    // Supabase 연동 설정 (본인의 Project Settings > API 값으로 변경하세요)
-    // ------------------------------------------------------------------
     const SUPABASE_URL = "https://inhtzkcqsicedeavrqqu.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluaHR6a2Nxc2ljZWRlYXZycXF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ1NDI2MDEsImV4cCI6MjEwMDExODYwMX0.d-n0nNY_MB8_2Lb2QnFnhbWKVqjIRWfkZebrZ9pWylU";
     
-    // Supabase 클라이언트 생성
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 페이지 이동 함수
     function nextPage(pageNumber) {
       document.querySelectorAll('.page').forEach(page => {
         page.classList.remove('active');
@@ -272,7 +252,6 @@
       }
     }
 
-    // 4페이지에서 확인 누른 뒤 5페이지 연출 및 DB 검증
     async function processAndGoToPage5() {
       nextPage(5);
 
@@ -288,13 +267,11 @@
         document.getElementById('slot3')
       ];
 
-      // 초기화
       codeBox.style.display = "none";
       codeBox.textContent = "";
       resultMsg.textContent = "보안 서버에서 정답을 검증하는 중...";
       resultMsg.style.color = "var(--sub-text)";
 
-      // 슬롯머신 돌아가는 연출 (무작위 알파벳/숫자)
       const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
       let interval = setInterval(() => {
         slots.forEach(slot => {
@@ -303,35 +280,30 @@
       }, 80);
 
       try {
-        // 🔒 Supabase 백엔드 함수(verify_quiz) 호출 - 입력값만 전송!
         const { data, error } = await _supabase.rpc('verify_quiz', {
           input_a1: u1,
           input_a2: u2,
           input_a3: u3
         });
 
-        // 2초 후 결과 반영
         setTimeout(() => {
           clearInterval(interval);
 
           if (error || !data || !data.success) {
-            // 오답인 경우 슬롯 멈춤 연출
             slots[0].textContent = 'X';
             slots[1].textContent = 'O';
             slots[2].textContent = 'X';
 
-            resultMsg.textContent = "❌ 오답이 있습니다. 인증번호 발급 실패!";
+            resultMsg.textContent = "답안 중 오답이 있습니다. 암호가 주어지지 않습니다.";
             resultMsg.style.color = "var(--danger-color)";
           } else {
-            // 🟢 정답인 경우 (DB에서 수신한 긴 인증번호 출력)
             slots[0].textContent = '7';
             slots[1].textContent = '7';
             slots[2].textContent = '7';
 
-            resultMsg.textContent = "🎉 정답입니다! 발급된 인증번호:";
+            resultMsg.textContent = "답안이 모두 정답입니다. 다음 링크를 통해 이동하십시오.";
             resultMsg.style.color = "var(--accent-color)";
 
-            // DB에서 가져온 긴 인증번호를 박스에 표시
             codeBox.textContent = data.code;
             codeBox.style.display = "block";
           }
