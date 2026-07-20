@@ -291,15 +291,15 @@
 
           if (error || !data || !data.success) {
             slots[0].textContent = 'X';
-            slots[1].textContent = 'O';
+            slots[1].textContent = 'X';
             slots[2].textContent = 'X';
 
-            resultMsg.textContent = "답안 중 오답이 있습니다. 암호가 주어지지 않습니다.";
+            resultMsg.textContent = "답안 중 오답이 있습니다. 암호가 주어지지 않습니다. (정답의 개수는 알 수 없습니다.)";
             resultMsg.style.color = "var(--danger-color)";
           } else {
-            slots[0].textContent = '7';
-            slots[1].textContent = '7';
-            slots[2].textContent = '7';
+            slots[0].textContent = 'O';
+            slots[1].textContent = 'O';
+            slots[2].textContent = 'O';
 
             resultMsg.textContent = "답안이 모두 정답입니다. 다음 링크를 통해 이동하십시오.";
             resultMsg.style.color = "var(--accent-color)";
