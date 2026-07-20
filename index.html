@@ -1,12 +1,23 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>나의 첫 웹페이지</title>
+  <meta charset="UTF-8">
+  <title>LaTeX 수식 웹페이지</title>
+  
+  <!-- MathJax 라이브러리 불러오기 -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
-    <h1>안녕하세요!</h1>
-    <p>HTML의 세계에 오신 것을 환영합니다.</p>
+
+  <h1>LaTeX 수식 표기 테스트</h1>
+
+  <!-- 1. 문장 안에 수식 넣기 (Inline): \( ... \) 사용 -->
+  <p>이차방정식의 근의 공식은 \( x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a} \) 입니다.</p>
+
+  <!-- 2. 한 줄 전체에 독립된 수식 넣기 (Block): \[ ... \] 사용 -->
+  <p>오일러의 공식:</p>
+  \[ e^{i\pi} + 1 = 0 \]
+
 </body>
 </html>
