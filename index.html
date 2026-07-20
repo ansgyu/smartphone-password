@@ -1,23 +1,309 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>LaTeX 수식 웹페이지</title>
-  
-  <!-- MathJax 라이브러리 불러오기 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>다크 모드 퀴즈 & 잭팟</title>
+
+  <!-- LaTeX (MathJax) 라이브러리 -->
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    /* 다크 테마 기본 스타일 */
+    :root {
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --accent-color: #00adb5;
+      --accent-hover: #008c93;
+      --text-color: #eeeeee;
+      --sub-text: #aaaaaa;
+      --danger-color: #ff5252;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background-color: var(--card-bg);
+      width: 90%;
+      max-width: 500px;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      text-align: center;
+    }
+
+    /* 페이지 숨김/노출 */
+    .page {
+      display: none;
+    }
+    .page.active {
+      display: block;
+    }
+
+    /* 텍스트 & 입력창 */
+    h1, h2 {
+      margin-bottom: 20px;
+      color: var(--accent-color);
+    }
+
+    p {
+      color: var(--sub-text);
+      line-height: 1.6;
+      margin-bottom: 25px;
+    }
+
+    .question-box {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      color: var(--text-color);
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border: 2px solid #333;
+      border-radius: 8px;
+      background-color: #2a2a2a;
+      color: #fff;
+      font-size: 1rem;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent-color);
+    }
+
+    /* 버튼 스타일 */
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      background-color: var(--accent-color);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    button:hover {
+      background-color: var(--accent-hover);
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    button.secondary {
+      background-color: #333;
+      color: var(--sub-text);
+    }
+
+    button.secondary:hover {
+      background-color: #444;
+      color: #fff;
+    }
+
+    /* 잭팟 슬롯머신 스타일 */
+    .jackpot-container {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin: 25px 0;
+    }
+
+    .slot {
+      width: 70px;
+      height: 90px;
+      background-color: #000;
+      border: 3px solid var(--accent-color);
+      border-radius: 10px;
+      font-size: 3rem;
+      font-weight: bold;
+      color: #ffd700;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+      overflow: hidden;
+    }
+
+    .result-msg {
+      margin-top: 15px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      min-height: 28px;
+    }
+  </style>
 </head>
 <body>
 
-  <h1>LaTeX 수식 표기 테스트</h1>
+  <div class="container">
 
-  <!-- 1. 문장 안에 수식 넣기 (Inline): \( ... \) 사용 -->
-  <p>이차방정식의 근의 공식은 \( x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a} \) 입니다.</p>
+    <!-- 1페이지: 설명창 -->
+    <div id="page1" class="page active">
+      <h1>퀴즈 챌린지</h1>
+      <p>총 3개의 문항이 준비되어 있습니다.<br>모든 문제를 맞히고 잭팟 777을 터뜨려보세요!</p>
+      <button onclick="nextPage(2)">다음</button>
+    </div>
 
-  <!-- 2. 한 줄 전체에 독립된 수식 넣기 (Block): \[ ... \] 사용 -->
-  <p>오일러의 공식:</p>
-  \[ e^{i\pi} + 1 = 0 \]
+    <!-- 2페이지: 문제 1 -->
+    <div id="page2" class="page">
+      <h2>문제 1</h2>
+      <div class="question-box">
+        아래 이차방정식의 해 \( x \)는 얼마일까요?<br>
+        \( x^2 - 4 = 0 \) (양수만 입력)
+      </div>
+      <input type="text" id="ans1" placeholder="답을 입력하세요">
+      <div class="btn-group">
+        <button class="secondary" onclick="nextPage(1)">뒤로가기</button>
+        <button onclick="nextPage(3)">다음</button>
+      </div>
+    </div>
 
+    <!-- 3페이지: 문제 2 -->
+    <div id="page3" class="page">
+      <h2>문제 2</h2>
+      <div class="question-box">
+        대한민국의 수도는 어디일까요?
+      </div>
+      <input type="text" id="ans2" placeholder="답을 입력하세요">
+      <div class="btn-group">
+        <button class="secondary" onclick="nextPage(2)">뒤로가기</button>
+        <button onclick="nextPage(4)">다음</button>
+      </div>
+    </div>
+
+    <!-- 4페이지: 문제 3 & 잭팟 -->
+    <div id="page4" class="page">
+      <h2>문제 3</h2>
+      <div class="question-box">
+        1년은 몇 달일까요? (숫자만 입력)
+      </div>
+      <input type="text" id="ans3" placeholder="답을 입력하세요">
+
+      <!-- 잭팟 슬롯머신 영역 -->
+      <div class="jackpot-container">
+        <div class="slot" id="slot1">?</div>
+        <div class="slot" id="slot2">?</div>
+        <div class="slot" id="slot3">?</div>
+      </div>
+      <div id="resultMsg" class="result-msg"></div>
+
+      <div class="btn-group">
+        <button class="secondary" onclick="nextPage(3)">뒤로가기</button>
+        <button id="checkBtn" onclick="startJackpot()">확인</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // 정답 정의 (원하는 정답으로 수정하세요)
+    const CORRECT_ANSWERS = {
+      ans1: "2",
+      ans2: "서울",
+      ans3: "12"
+    };
+
+    // 페이지 이동 함수
+    function nextPage(pageNumber) {
+      document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+      });
+      document.getElementById('page' + pageNumber).classList.add('active');
+
+      // MathJax 수식 재렌더링 (페이지 전환 시 수식 안 깨지게)
+      if (window.MathJax) {
+        MathJax.typesetPromise();
+      }
+    }
+
+    // 4페이지 잭팟 슬롯머신 동작 함수
+    function startJackpot() {
+      const u1 = document.getElementById('ans1').value.trim();
+      const u2 = document.getElementById('ans2').value.trim();
+      const u3 = document.getElementById('ans3').value.trim();
+
+      // 3문제가 모두 정답인지 체크
+      const isAllCorrect = (u1 === CORRECT_ANSWERS.ans1) && 
+                           (u2 === CORRECT_ANSWERS.ans2) && 
+                           (u3 === CORRECT_ANSWERS.ans3);
+
+      const checkBtn = document.getElementById('checkBtn');
+      const resultMsg = document.getElementById('resultMsg');
+      const slots = [
+        document.getElementById('slot1'),
+        document.getElementById('slot2'),
+        document.getElementById('slot3')
+      ];
+
+      // 버튼 중복 클릭 방지 및 초기화
+      checkBtn.disabled = true;
+      resultMsg.textContent = "정답 확인 중...";
+      resultMsg.style.color = "var(--sub-text)";
+
+      // 빙빙 돌기 애니메이션 (0.1초마다 숫자가 무작위로 바뀜)
+      let interval = setInterval(() => {
+        slots.forEach(slot => {
+          slot.textContent = Math.floor(Math.random() * 10);
+        });
+      }, 80);
+
+      // 2초 후 멈추면서 결과 출력
+      setTimeout(() => {
+        clearInterval(interval);
+        checkBtn.disabled = false;
+
+        if (isAllCorrect) {
+          // 모두 정답이면 7 7 7
+          slots[0].textContent = '7';
+          slots[1].textContent = '7';
+          slots[2].textContent = '7';
+          resultMsg.textContent = "🎉 축하합니다! 정답입니다! (777)";
+          resultMsg.style.color = "var(--accent-color)";
+        } else {
+          // 하나라도 틀리면 777이 아닌 랜덤 숫자로 고정 (단, 777은 나오지 않게 처리)
+          let n1, n2, n3;
+          do {
+            n1 = Math.floor(Math.random() * 10);
+            n2 = Math.floor(Math.random() * 10);
+            n3 = Math.floor(Math.random() * 10);
+          } while (n1 === 7 && n2 === 7 && n3 === 7); // 혹시라도 777 나오면 재추첨
+
+          slots[0].textContent = n1;
+          slots[1].textContent = n2;
+          slots[2].textContent = n3;
+          resultMsg.textContent = "❌ 오답이 있습니다. 다시 시도해보세요!";
+          resultMsg.style.color = "var(--danger-color)";
+        }
+      }, 2000);
+    }
+  </script>
 </body>
 </html>
