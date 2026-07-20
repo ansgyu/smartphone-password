@@ -9,6 +9,9 @@
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
+  <!-- Supabase Client 라이브러리 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root {
       --bg-color: #121212;
@@ -125,21 +128,21 @@
       color: #fff;
     }
 
-    /* 잭팟 슬롯머신 스타일 */
+    /* 잭팟 애니메이션 영역 */
     .jackpot-container {
       display: flex;
       justify-content: center;
-      gap: 15px;
+      gap: 12px;
       margin: 25px 0;
     }
 
     .slot {
-      width: 70px;
-      height: 90px;
+      width: 60px;
+      height: 80px;
       background-color: #000;
       border: 3px solid var(--accent-color);
       border-radius: 10px;
-      font-size: 3rem;
+      font-size: 2.2rem;
       font-weight: bold;
       color: #ffd700;
       display: flex;
@@ -147,6 +150,22 @@
       align-items: center;
       box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
       overflow: hidden;
+    }
+
+    /* 긴 인증번호 출력 박스 */
+    .code-box {
+      display: none;
+      background-color: #000;
+      border: 2px dashed var(--accent-color);
+      padding: 15px;
+      border-radius: 10px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #00ffcc;
+      margin: 20px 0;
+      word-break: break-all;
+      user-select: all; /* 클릭 시 쉽게 복사 가능 */
     }
 
     .result-msg {
@@ -164,7 +183,7 @@
     <!-- 1페이지: 설명창 -->
     <div id="page1" class="page active">
       <h1>퀴즈 챌린지</h1>
-      <p>총 3개의 문항이 준비되어 있습니다.<br>모든 문제를 맞히고 최종 인증번호를 획득하세요!</p>
+      <p>총 3개의 문항이 준비되어 있습니다.<br>모든 문제를 맞히고 보안 인증번호를 획득하세요!</p>
       <button onclick="nextPage(2)">다음</button>
     </div>
 
@@ -195,7 +214,7 @@
       </div>
     </div>
 
-    <!-- 4페이지: 문제 3 (확인 누르면 5페이지로) -->
+    <!-- 4페이지: 문제 3 -->
     <div id="page4" class="page">
       <h2>문제 3</h2>
       <div class="question-box">
@@ -208,18 +227,21 @@
       </div>
     </div>
 
-    <!-- 5페이지: 결과 & 잭팟 스롯머신 -->
+    <!-- 5페이지: 결과 & 슬롯머신 -->
     <div id="page5" class="page">
       <h2>결과 확인</h2>
-      <p>정답 여부를 확인하는 중입니다...</p>
 
-      <!-- 잭팟 슬롯머신 -->
+      <!-- 잭팟 슬롯 연출 -->
       <div class="jackpot-container">
         <div class="slot" id="slot1">?</div>
         <div class="slot" id="slot2">?</div>
         <div class="slot" id="slot3">?</div>
       </div>
+
       <div id="resultMsg" class="result-msg"></div>
+
+      <!-- 정답 시 긴 인증번호가 나타나는 영역 -->
+      <div id="codeBox" class="code-box"></div>
 
       <div class="btn-group" style="margin-top: 20px;">
         <button class="secondary" onclick="nextPage(4)">다시 풀기</button>
@@ -229,26 +251,14 @@
   </div>
 
   <script>
-    /*
-      [보안 가이드 - SHA-256 해시값]
-      개발자 도구로 정답을 볼 수 없도록 정답 단어를 암호화(Hash)한 상태로 저장합니다.
-      - 정답 "2"   -> "d41d8cd98f00b204e9800998ecf8427e..." 형태의 Hash값
-      - 정답 "서울" -> "1d80... "
-      - 정답 "12"   -> "6b86... "
-    */
-    const HASHED_ANSWERS = {
-      ans1: "d41d8cd98f00b204e9800998ecf8427e", // '2'의 해시값이 정답인지 체크하도록 암호화
-      ans2: "서울", // 소문자/공백 제거 후 비교
-      ans3: "12"
-    };
-
-    // 보안을 위한 입력값 SHA-256 암호화 함수 (웹 브라우저 내장 API 활용)
-    async function sha256(message) {
-      const msgBuffer = new TextEncoder().encode(message);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
+    // ------------------------------------------------------------------
+    // Supabase 연동 설정 (본인의 Project Settings > API 값으로 변경하세요)
+    // ------------------------------------------------------------------
+    const SUPABASE_URL = "https://inhtzkcqsicedeavrqqu.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluaHR6a2Nxc2ljZWRlYXZycXF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ1NDI2MDEsImV4cCI6MjEwMDExODYwMX0.d-n0nNY_MB8_2Lb2QnFnhbWKVqjIRWfkZebrZ9pWylU";
+    
+    // Supabase 클라이언트 생성
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // 페이지 이동 함수
     function nextPage(pageNumber) {
@@ -262,73 +272,76 @@
       }
     }
 
-    // 4페이지에서 확인 클릭 시 5페이지로 이동 후 슬롯머신 실행
+    // 4페이지에서 확인 누른 뒤 5페이지 연출 및 DB 검증
     async function processAndGoToPage5() {
       nextPage(5);
-      
+
       const u1 = document.getElementById('ans1').value.trim();
       const u2 = document.getElementById('ans2').value.trim();
       const u3 = document.getElementById('ans3').value.trim();
 
       const resultMsg = document.getElementById('resultMsg');
+      const codeBox = document.getElementById('codeBox');
       const slots = [
         document.getElementById('slot1'),
         document.getElementById('slot2'),
         document.getElementById('slot3')
       ];
 
-      resultMsg.textContent = "인증번호 생성 중...";
+      // 초기화
+      codeBox.style.display = "none";
+      codeBox.textContent = "";
+      resultMsg.textContent = "보안 서버에서 정답을 검증하는 중...";
       resultMsg.style.color = "var(--sub-text)";
 
-      // 슬롯머신 돌아가는 효과 (0.08초 간격)
+      // 슬롯머신 돌아가는 연출 (무작위 알파벳/숫자)
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
       let interval = setInterval(() => {
         slots.forEach(slot => {
-          slot.textContent = Math.floor(Math.random() * 10);
+          slot.textContent = chars.charAt(Math.floor(Math.random() * chars.length));
         });
       }, 80);
 
-      // 정답 체크 (실제 정답: 2, 서울, 12)
-      const isCorrect1 = (u1 === "2");
-      const isCorrect2 = (u2 === "서울");
-      const isCorrect3 = (u3 === "12");
-      const isAllCorrect = isCorrect1 && isCorrect2 && isCorrect3;
+      try {
+        // 🔒 Supabase 백엔드 함수(verify_quiz) 호출 - 입력값만 전송!
+        const { data, error } = await _supabase.rpc('verify_quiz', {
+          input_a1: u1,
+          input_a2: u2,
+          input_a3: u3
+        });
 
-      // 2.5초 후 결과 확정
-      setTimeout(() => {
+        // 2초 후 결과 반영
+        setTimeout(() => {
+          clearInterval(interval);
+
+          if (error || !data || !data.success) {
+            // 오답인 경우 슬롯 멈춤 연출
+            slots[0].textContent = 'X';
+            slots[1].textContent = 'O';
+            slots[2].textContent = 'X';
+
+            resultMsg.textContent = "❌ 오답이 있습니다. 인증번호 발급 실패!";
+            resultMsg.style.color = "var(--danger-color)";
+          } else {
+            // 🟢 정답인 경우 (DB에서 수신한 긴 인증번호 출력)
+            slots[0].textContent = '7';
+            slots[1].textContent = '7';
+            slots[2].textContent = '7';
+
+            resultMsg.textContent = "🎉 정답입니다! 발급된 인증번호:";
+            resultMsg.style.color = "var(--accent-color)";
+
+            // DB에서 가져온 긴 인증번호를 박스에 표시
+            codeBox.textContent = data.code;
+            codeBox.style.display = "block";
+          }
+        }, 2000);
+
+      } catch (err) {
         clearInterval(interval);
-
-        if (isAllCorrect) {
-          /* 
-             [인증번호 조합 보안]
-             사용자가 입력한 답(정답)들을 시드로 활용해
-             정답을 맞힌 사람만 유효한 인증번호가 계산되어 나오도록 구현
-          */
-          // 정답일 때 나오는 3자리 인증번호 (원하는 숫자로 수정 가능)
-          const certCode = ["7", "7", "7"]; 
-
-          slots[0].textContent = certCode[0];
-          slots[1].textContent = certCode[1];
-          slots[2].textContent = certCode[2];
-          
-          resultMsg.textContent = `🎉 축하합니다! 발급된 인증번호: [${certCode.join('')}]`;
-          resultMsg.style.color = "var(--accent-color)";
-        } else {
-          // 틀렸을 때는 정답 인증번호 조합이 나오지 않도록 무작위 추출
-          let n1, n2, n3;
-          do {
-            n1 = Math.floor(Math.random() * 10);
-            n2 = Math.floor(Math.random() * 10);
-            n3 = Math.floor(Math.random() * 10);
-          } while (n1 === 7 && n2 === 7 && n3 === 7);
-
-          slots[0].textContent = n1;
-          slots[1].textContent = n2;
-          slots[2].textContent = n3;
-
-          resultMsg.textContent = "❌ 오답이 있습니다. 인증번호 발급 실패!";
-          resultMsg.style.color = "var(--danger-color)";
-        }
-      }, 2500);
+        resultMsg.textContent = "서버 통신 중 오류가 발생했습니다.";
+        resultMsg.style.color = "var(--danger-color)";
+      }
     }
   </script>
 </body>
